@@ -85,7 +85,10 @@ kable(head(film_data, n = 5), caption = '\\label{tab:filmdata} The first 5 rows 
 
 ## Data visualization display
 
+### Boxplots
+
 ```{r, eval = TRUE,  out.width = '100%', fig.align = "center", warning = FALSE, fig.cap = '\\label{fig:rate} Continous Variables VS Rate.'}
+#get Boxplot
 p1<-ggplot(data = film_data, aes(x = Rate, y = Year, fill = Rate)) +
   geom_boxplot() +
   labs(x = "Rate", y = "Year")+ 
@@ -101,7 +104,13 @@ p3<-ggplot(data = film_data, aes(x = Rate, y = Budget, fill = Rate)) +
 grid.arrange(p1,p2,p3,nrow=2)
 ```
 
-## correlation matrix
+- Films with rating greater than 7 are higher in more modern publishing years
+
+- Films with rating greater than 7 are shorter in broadcast time
+
+- Films with rating greater than 7 are higher have higher budget
+
+### Correlation matrix
 
 Before we use these continous variables to fit the Generalised Linear Model(GLM), check the correlation between different variables first.
 
@@ -112,9 +121,12 @@ ggpairs(film[c("year","length","budget")])
 
 As the plot shown above, the correlation between different variables are quite low.
 
+### Histogram for Genre
+
 The following plot implies that the categorical variable ***Genre*** is useful for the prediction of the response variable ***Rate_value***
 
 ```{r, eval = TRUE,  out.width = '80%', fig.align = "center", warning = FALSE, fig.cap = '\\label{fig:rate} Proportion of different genres of each Rate.'}
+#generate bar plot
 ggplot(film, aes(x= rate,  y = ..prop.., group=genre, fill=genre)) + 
     geom_bar(position="dodge", stat="count") +
     labs(y = "Proportion")
@@ -130,6 +142,7 @@ The model we fitted is the following: \begin{align}
 \end{align} where $p\ =$ Prob(Rate greater than 7) and $1-p\ =$ Prob(Rate less than 7) and the fitted result shows in the following:
 
 ```{r data2, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+#glm commend used to fit model 
 model.film <- glm(Rate_value~Year+Length+Budget+Genre, data = film_data,
                   family = binomial(link = "logit"))
 model.film%>%
@@ -143,12 +156,14 @@ Hence, from the result we got, we have known the values of $\alpha$ and $\beta_{
 Comparing to the point estimates of the influence of the variables, the following shows the 95% confidence intervals, figure and the estimates for these log-odds:
 
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+#calculate CI for log-odds
 confint(model.film) %>%
   kable(caption = '\\label{tab:filmdata} Confidence Interval')%>%
   kable_styling(font_size = 10, latex_options = 'h')
 ```
 
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+#Show CI in plot
 plot_model(model.film, show.values = TRUE, transform = NULL,
            title = "Log-Odds (Film rate greater than 7)", show.p = FALSE)
 film_data<-film_data%>%
@@ -191,6 +206,7 @@ $$
 After we obtain a 95% confidence interval for the odds by simply exponentiatin the lower and upper bounds of our log-odds interval and generate a plot as following:
 
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+#Show CI for odds in plot
 plot_model(model.film, show.values = TRUE, axis.lim = c(0.001,40),
            title = "Odds (Film rate greater than 7)", show.p = FALSE)
 film_data<-film_data%>%
@@ -206,6 +222,7 @@ From the plot, the confidence interval gives a range of plausible values for var
 We can obtain the probability $p\ =$ Prob(Rate greater than 7) using the Formula (2) above using the transformation: $p\ =\frac{(2)}{1+(2)}$
 
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+#Add probability to original dataset
 film_data<-film_data%>%
   mutate(p=fitted(model.film))
 kable(head(film_data, n = 5), caption = '\\label{tab:filmdata} The first 5 rows of the film data with p')%>%
