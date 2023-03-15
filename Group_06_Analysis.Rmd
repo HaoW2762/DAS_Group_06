@@ -2,8 +2,9 @@
 title: "Group_06_Analysis"
 author: "Hao Wu,Yiliang Shen,Jingting Zhao,Jinshen Zhang,Ninad Khare"
 output:
-  pdf_document: default
-  html_document: default
+  html_document:
+    df_print: paged
+  github_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -35,7 +36,7 @@ We are interested in which properties of films influence whether they are rated 
 #Data pre-processing
 
 #Set the current working directory
-setwd("/Users/jason/Desktop")
+#setwd("/Users/jason/Desktop")
 
 #Read data and Remove invalid data rows with null values
 film<-na.omit(read.csv("dataset6.csv"))
@@ -154,10 +155,36 @@ kable(head(film_data, n = 5), caption = '\\label{tab:filmdata} The first 5 rows 
   kable_styling(font_size = 10, latex_options = 'h')
 ```
 
-Instead of the log-odds, the following shows the figure and the estimates of the odds, which is: \begin{align}
+We simply exponentiate the log-odds to get odds, the following shows the figure and the estimates of the odds, which is:
+$$
+\begin{align}
 \frac{p}{1-p}\ &= exp(\alpha+ \beta_1 \cdot \textrm{Year}+\beta_2 \cdot \textrm{Length}+\beta_3 \cdot \textrm{Budget}+\beta_4 \cdot I_{Animation}+\beta_5 \cdot I_{Comedy} +\nonumber \\
 &\beta_6 \cdot I_{Documentary}+\beta_7 \cdot I_{Drama}+\beta_8 \cdot I_{Romance}+\beta_9 \cdot I_{Short})
 \end{align}
+$$
+
+```{r exp_log_odds, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+# exponentiate the log-odds
+model.film %>%
+  coef() %>%
+  exp()
+```
+
+For $Year$ we have an odds of $1.01$, which indicates that for every 1 unit increase in $Year$, the odds of the film with rating greater than 7 increase by a factor of 1.01. And the rest coefficients of variables perform the same thing. Odds-ratio obtained from year 2000 and 2001 can be calculated as the following:
+$$
+\begin{align}
+\frac{Odds_{Year=2001}}{Odds_{Year=2000}}&=
+\frac{\frac{p_{Year=2001}}{1-p_{Year=2001}}}{\frac{p_{Year=2000}}{1-p_{Year=2000}}}\\
+&=\frac{exp(\alpha+\beta_1\cdot2001+K)}
+{exp(\alpha+\beta_1\cdot2000+K)}\\
+&=exp(\beta_1 \cdot(2001-2000))\\
+&=exp(0.010194)\\
+&=1.01\\
+\text{ where K} &=\beta_2\cdot\textrm{Length}+\beta_3\cdot\textrm{Budget}
++\beta_4\cdot I_{Animation}+\beta_5\cdot I_{Comedy}\\&+\beta_6\cdot I_{Documentary}+
+\beta_7\cdot I_{Drama}+\beta_8\cdot I_{Romance}+\beta_9\cdot I_{Short})\\
+\end{align}
+$$
 
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
 plot_model(model.film, show.values = TRUE, axis.lim = c(0.001,40),
