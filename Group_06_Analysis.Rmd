@@ -188,6 +188,8 @@ $$
 \end{align}
 $$
 
+After we obtain a 95% confidence interval for the odds by simply exponentiatin the lower and upper bounds of our log-odds interval and generate a plot as following:
+
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
 plot_model(model.film, show.values = TRUE, axis.lim = c(0.001,40),
            title = "Odds (Film rate greater than 7)", show.p = FALSE)
@@ -196,6 +198,8 @@ film_data<-film_data%>%
 kable(head(film_data, n = 5), caption = '\\label{tab:filmdata} The first 5 rows of the film data with odds')%>%
   kable_styling(font_size = 8, latex_options = 'h')
 ```
+
+From the plot, the confidence interval gives a range of plausible values for variables' coefficients.
 
 ## Probability
 
@@ -213,3 +217,19 @@ The figures of the Prob. of each explanatory variables using the fitted model sh
 ```{r, echo = FALSE, eval = TRUE,out.width = '90%', fig.align = "center", warning = FALSE, message = FALSE}
 plot_model(model.film,type = "pred",title="Prob. of the rate of the film greater than 7")
 ```
+
+The regression model of Budget vs. probability of film rating greater than 7 clearly shows that: 
+
+- Within the range of 10, probability of film rating greater than 7 slightly increases as budget increases
+
+- Within the range from 10 to 15, probability of film rating greater than 7 increasing rate rises a little bit
+
+- Within the range greater 15, probability of film rating greater than 7 largely increases as budget increases
+
+The regression model of Genre vs. probability of film rating greater than 7 clearly shows that:
+
+- The films with genre: "Drama", "Action", "Animation" and "Romance" always have low probability of film rating greater than 7
+
+- The films with genre: "Documentary", "Comedy" and "Short" always have high probability of film rating greater than 7
+
+- However, genre "Short" film's probability fluctuates a lot.
