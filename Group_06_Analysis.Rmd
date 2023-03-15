@@ -5,6 +5,8 @@ output:
   html_document:
     df_print: paged
   github_document: default
+editor_options:
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -170,7 +172,7 @@ model.film %>%
   exp()
 ```
 
-For $Year$ we have an odds of $1.01$, which indicates that for every 1 unit increase in $Year$, the odds of the film with rating greater than 7 increase by a factor of 1.01. And the rest coefficients of variables perform the same thing. Odds-ratio obtained from year 2000 and 2001 can be calculated as the following:
+For ***Year*** we have an odds of ***1.01***, which indicates that for every 1 unit increase in ***Year***, the odds of the film with rating greater than 7 increase by a factor of 1.01. And the rest coefficients of variables perform the same thing. Odds-ratio obtained from year 2000 and 2001 can be calculated as the following:
 $$
 \begin{align}
 \frac{Odds_{Year=2001}}{Odds_{Year=2000}}&=
