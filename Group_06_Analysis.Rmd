@@ -31,19 +31,22 @@ library(readr)
 
 # Introduction {#sec:intro}
 
+The IMDB film database contains a collection of seven characteristics about the films such as year of showing, length of film, production budget and the rating and others.
+
 We are interested in which properties of films influence whether they are rated by IMDB as greater than 7 or not.
 
-```{r data, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+```{r data, echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE}
 
 #Data pre-processing
-
 #Set the current working directory
-#setwd("/Users/jason/Desktop")
+
+setwd("/Users/jason/Desktop")
+
+
 
 #Read data and Remove invalid data rows with null values
 film<-na.omit(read.csv("dataset6.csv"))
-
-#add new variables according to whether the rating which takes the value 1 if rating is greater than 7, otherwise 0
+#add new variables according to whether the rating is greater than 7
 film<-film%>%
   mutate(rate_value=ifelse(rating> 7,1,0))%>%
   mutate(rate=ifelse(rating> 7,'Greater than 7','Less than 7'))
@@ -63,32 +66,39 @@ film_data<-film%>%
 
 The following is the explanatory variables and the response variable we are interested in.
 
-***Year***: Year of release of the film in cinemas.
+**Year**: Year of release of the film in cinemas.
 
-***Length***: Duration (in minutes).
+**Length**: Duration (in minutes).
 
-***Budget***: Budget for the films production (in \$1000000s).
+**Budget**: Budget for the films production (in \$1000000s).
 
-***Genre***: Genre of the film.
+**Genre**: Genre of the film.
 
-***Rate***: Whether the rating of the film is greater than 7.
+**Rate**: Whether the rating of the film is greater than 7.
 
-***Rate_value***: If the rate of the film is greater than 7, takes the value 1.Otherwise, takes the value 0.
+**Rate_value**: If the rate of the film is greater than 7, takes the value 1.Otherwise, takes the value 0.
 
 The following table shows the dataset which contains all the variables we are interested in.
 
-```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
-#Data table display after data cleaning
-kable(head(film_data, n = 5), caption = '\\label{tab:filmdata} The first 5 rows of the film data')%>%
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE}
+#Data table display after data process
+kable(head(film_data, n = 5), 
+      caption = '\\label{tab:filmdata} The first 5 rows of the film data',
+      align = "c") %>% 
+  kable_styling(full_width = F)%>% 
   kable_styling(font_size = 10, latex_options = 'h')
 ```
 
 ## Data visualization display
 
-### Boxplots
 
-```{r, eval = TRUE,  out.width = '100%', fig.align = "center", warning = FALSE, fig.cap = '\\label{fig:rate} Continous Variables VS Rate.'}
+### Boxplots
+The Boxplot can first be used to compare the characteristics of the distribution of multiple sets of data. The graph below explains well the distribution of the three continuous variables (Year, Length, Budget) on whether the movie rating is greater than 7. 
+
+```{r, echo = TRUE ,eval = TRUE,  out.width = '75%', fig.align = "center", warning = FALSE, fig.pos="H",fig.cap = '\\label{fig:rate} Boxplot of Continous Variables VS Rate.'}
+
 #get Boxplot
+
 p1<-ggplot(data = film_data, aes(x = Rate, y = Year, fill = Rate)) +
   geom_boxplot() +
   labs(x = "Rate", y = "Year")+ 
@@ -104,6 +114,11 @@ p3<-ggplot(data = film_data, aes(x = Rate, y = Budget, fill = Rate)) +
 grid.arrange(p1,p2,p3,nrow=2)
 ```
 
+
+The distribution of the variables **Year** and **Budget** of the movies in the two groups, rates greater than 7 and less than 7, are symmetric and the distribution of the **Length** of the films in the two groups has a significant difference, which can be seen the length of the films with the rate less than 7 is more likely longer than those with the rate greater than 7 and has a minor variance.
+
+
+
 - Films with rating greater than 7 are higher in more modern publishing years
 
 - Films with rating greater than 7 are shorter in broadcast time
@@ -112,22 +127,28 @@ grid.arrange(p1,p2,p3,nrow=2)
 
 ### Correlation matrix
 
-Before we use these continous variables to fit the Generalised Linear Model(GLM), check the correlation between different variables first.
 
-```{r, eval = TRUE, out.width = '80%', fig.align = "center",warning = FALSE, fig.cap = '\\label{fig:gini} The correlation coefficient between variables.'}
+Before we use these continuous variables to fit the Generalized Linear Model(GLM), check the correlation between different variables first.
+
+```{r,echo = TRUE, eval = TRUE, out.width = '60%', fig.align = "center",warning = FALSE, fig.pos="H",fig.cap = '\\label{fig:gini} The correlation coefficient between continous variables.'}
 #Obtain the correlation coefficient between variables
-ggpairs(film[c("year","length","budget")])
+ggpairs(film_data[c("Year","Length","Budget")])
 ```
 
-As the plot shown above, the correlation between different variables are quite low.
+As the figure shown above, the correlation between different variables are quite low, which means it is reasonable to select all of them to fit the model.
+
 
 ### Histogram for Genre
+The following plot implies that the categorical variable **Genre** is useful for the prediction of the response variable **Rate_value**.
 
-The following plot implies that the categorical variable ***Genre*** is useful for the prediction of the response variable ***Rate_value***
+It can be seen that the two bar charts on the left and right are almost perfectly complementary, with the Romance genre scoring a relatively low percentage of films with rating greater than seven.
 
-```{r, eval = TRUE,  out.width = '80%', fig.align = "center", warning = FALSE, fig.cap = '\\label{fig:rate} Proportion of different genres of each Rate.'}
-#generate bar plot
-ggplot(film, aes(x= rate,  y = ..prop.., group=genre, fill=genre)) + 
+```{r,echo = TRUE, eval = TRUE,  out.width = '60%', fig.align = "center", warning = FALSE,  fig.pos="H",fig.cap = '\\label{fig:rate} Proportion of different genres of Rate.'}
+ggplot(film_data, aes(x= Rate,  y = ..prop.., group=Genre, fill=Genre)) + 
+
+
+
+
     geom_bar(position="dodge", stat="count") +
     labs(y = "Proportion")
 ```
@@ -141,40 +162,67 @@ The model we fitted is the following: \begin{align}
 &\beta_6 \cdot I_{Documentary}+\beta_7 \cdot I_{Drama}+\beta_8 \cdot I_{Romance}+\beta_9 \cdot I_{Short} 
 \end{align} where $p\ =$ Prob(Rate greater than 7) and $1-p\ =$ Prob(Rate less than 7) and the fitted result shows in the following:
 
-```{r data2, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+```{r data2,echo = TRUE, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+
 #glm commend used to fit model 
+
 model.film <- glm(Rate_value~Year+Length+Budget+Genre, data = film_data,
                   family = binomial(link = "logit"))
 model.film%>%
   summary()
 ```
 
-Hence, from the result we got, we have known the values of $\alpha$ and $\beta_{i}$, such as $\beta_1 \ =\ 0.010194$, which means the log-odds of the rate of the film being greater than 7 increase by 0.010194 for every one unit increase in Year.
+Hence, from the result we got, we have known the values of $\alpha$ and $\beta_{i}$, such as $\beta_1 \ =\ 0.010194$, which means the log-odds of the rate of the film being greater than 7 increase by 0.010194 for every one unit increase in **Year**.
 
 ## Confidence interval
 
 Comparing to the point estimates of the influence of the variables, the following shows the 95% confidence intervals, figure and the estimates for these log-odds:
 
-```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+
+```{r,echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE}
 #calculate CI for log-odds
 confint(model.film) %>%
-  kable(caption = '\\label{tab:filmdata} Confidence Interval')%>%
+  kable(caption = '\\label{tab:filmdata} Confidence Interval',align = "c") %>% 
+  kable_styling(full_width = F)%>% 
+  column_spec(1, bold = T)%>%
   kable_styling(font_size = 10, latex_options = 'h')
 ```
 
-```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+
+```{r,echo = TRUE, eval = TRUE,  out.width = '80%', fig.align = "center", warning = FALSE,  fig.pos="H",fig.cap = '\\label{figrate} The log-odds for different variables.'}
+
 #Show CI in plot
+
 plot_model(model.film, show.values = TRUE, transform = NULL,
            title = "Log-Odds (Film rate greater than 7)", show.p = FALSE)
+```
+The 95% confidence interval for the different variables can be observed more visualized in the Figure 4.
+
+The following table shows the first 5 rows of the estimates of the log-odds given by the fitted model. 
+
+```{r,echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE}
 film_data<-film_data%>%
   mutate(logodds.Greater_than_7 = predict(model.film))
-kable(head(film_data, n = 5), caption = '\\label{tab:filmdata} The first 5 rows of the film data with logodds')%>%
+kable(head(film_data, n = 5),
+      caption = '\\label{tab:filmdata} The first 5 rows of the film data with log-odds',
+      align = "c") %>% 
+  kable_styling(full_width = F)%>% 
+  column_spec(7, bold = T)%>%
   kable_styling(font_size = 10, latex_options = 'h')
 ```
 
+
+To be specific, if the log-odds is positive, then the random experiment is more likely to succeed than to lose. In contrast, if the log-odds is negative, then the probability of losing is greater than success. 
+
+Moreover, the larger the absolute value of the log-odds, the greater the difference in the probability of success and failure of a trial. As for the question we are interested in, the larger the absolute value of the negative log-odds, the less likelihood of the movie rates greater than 7.
+
+
+Instead of the log-odds, the following shows the figure and the estimates of the odds, which is: \begin{align}
+=======
 We simply exponentiate the log-odds to get odds, the following shows the figure and the estimates of the odds, which is:
 $$
 \begin{align}
+
 \frac{p}{1-p}\ &= exp(\alpha+ \beta_1 \cdot \textrm{Year}+\beta_2 \cdot \textrm{Length}+\beta_3 \cdot \textrm{Budget}+\beta_4 \cdot I_{Animation}+\beta_5 \cdot I_{Comedy} +\nonumber \\
 &\beta_6 \cdot I_{Documentary}+\beta_7 \cdot I_{Drama}+\beta_8 \cdot I_{Romance}+\beta_9 \cdot I_{Short})
 \end{align}
@@ -205,13 +253,25 @@ $$
 
 After we obtain a 95% confidence interval for the odds by simply exponentiatin the lower and upper bounds of our log-odds interval and generate a plot as following:
 
-```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+```{r,echo = TRUE, eval = TRUE,  out.width = '80%', fig.align = "center", warning = FALSE,  fig.pos="H",fig.cap = '\\label{fig:rate} The odds for different variables.'}
+
 #Show CI for odds in plot
+
 plot_model(model.film, show.values = TRUE, axis.lim = c(0.001,40),
            title = "Odds (Film rate greater than 7)", show.p = FALSE)
+
+```
+
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE}
+
 film_data<-film_data%>%
   mutate(odds.Greater_than_7 = exp(logodds.Greater_than_7))
-kable(head(film_data, n = 5), caption = '\\label{tab:filmdata} The first 5 rows of the film data with odds')%>%
+kable(head(film_data, n = 5), 
+      caption = '\\label{tab:filmdata} The first 5 rows of the film data with odds',
+      align = "c") %>%  
+  column_spec(c(2,3), width = "21px") %>%
+  column_spec(8, bold = T)%>%
   kable_styling(font_size = 8, latex_options = 'h')
 ```
 
@@ -221,18 +281,38 @@ From the plot, the confidence interval gives a range of plausible values for var
 
 We can obtain the probability $p\ =$ Prob(Rate greater than 7) using the Formula (2) above using the transformation: $p\ =\frac{(2)}{1+(2)}$
 
-```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE}
+
 #Add probability to original dataset
+
 film_data<-film_data%>%
   mutate(p=fitted(model.film))
-kable(head(film_data, n = 5), caption = '\\label{tab:filmdata} The first 5 rows of the film data with p')%>%
-  kable_styling(font_size = 7, latex_options = 'h')
+kable(head(film_data, n = 5),
+      caption = '\\label{tab:filmdata} The first 5 rows of the film data with p',
+      align = "c")%>%
+  column_spec(9, bold = T)%>%
+  kable_styling(font_size = 7, latex_options = 'h')%>%
+  column_spec(c(2,3), width = "19px") %>%
+  column_spec(4, width = "40px") %>%
+  column_spec(6, width = "36px") %>%
+  column_spec(8, width = "72px") 
 ```
+
+In order to observe the effectiveness of the model fit then, plots are drawn for comparing the predicted and observed values.
+
+The 95% confidence interval of the prediction is shaded, and the wider the confidence interval, the wider the shaded part. Consequently, the width of the shaded portion in the plot of predicted versus observed values gives a clearer understanding of the uncertainty in the predicted results.
+
+The fitted out regression line gives a straightforward way to describe the overall trend of the model and how well the model fits. This line is supposed to offer a good match to the data points in the scatter plot.
+
+As can be seen in the three cases of continuous type variables (Figures 6-8), the shaded part of the picture is moderately wide and the fitting line falls within the shaded part, which demonstrates that this model is very effective.
 
 The figures of the Prob. of each explanatory variables using the fitted model show below:
 
-```{r, echo = FALSE, eval = TRUE,out.width = '90%', fig.align = "center", warning = FALSE, message = FALSE}
-plot_model(model.film,type = "pred",title="Prob. of the rate of the film greater than 7")
+```{r, echo = TRUE,eval = TRUE,  out.width = '80%', fig.align = "center", warning = FALSE,  fig.pos="H",fig.cap = '\\label{fig:rate} Comparing predictions and observations.'}
+
+plot_model(model.film,type = "pred",
+           title = "Prob. of the rate of the film greater than 7")
 ```
 
 The regression model of Budget vs. probability of film rating greater than 7 clearly shows that: 
