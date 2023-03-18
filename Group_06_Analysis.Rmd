@@ -82,7 +82,7 @@ kable(head(film_data, n = 5), caption = '\\label{tab:filmdata} The first 5 rows 
 
 ## Data visualization display
 
-```{r, eval = TRUE,  out.width = '100%', fig.align = "center", warning = FALSE, fig.cap = '\\label{fig:rate} Continous Variables VS Rate.'}
+```{r, eval = TRUE,  out.width = '90%', fig.align = "center", warning = FALSE, fig.cap = '\\label{fig:rate} Continous Variables VS Rate.'}
 p1<-ggplot(data = film_data, aes(x = Rate, y = Year, fill = Rate)) +
   geom_boxplot() +
   labs(x = "Rate", y = "Year")+ 
