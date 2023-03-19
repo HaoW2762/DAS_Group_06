@@ -208,7 +208,7 @@ Instead of the log-odds, the following shows the figure and the estimates of the
 &\beta_6 \cdot I_{Documentary}+\beta_7 \cdot I_{Drama}+\beta_8 \cdot I_{Romance}+\beta_9 \cdot I_{Short})
 \end{align}
 
-We simply exponentiate the log-odds to get odds, the following shows the figure and the estimates of the odds, which is:
+We simply exponentiate the log-odds to get odds:
 ```{r exp_log_odds, echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE}
 # exponentiate the log-odds
 model.film %>%
@@ -293,7 +293,7 @@ plot_model(model.film,type = "pred",
 
 As can be seen in the three cases of continuous type variables (Figures 6-8), the shaded part of the picture is moderately wide and the fitting line falls within the shaded part, which demonstrates that this model is effective. Based on the figures we got, we can have a more detailed interpretation, for example:
 
-The regression model of Budget vs. probability of film rating greater than 7 clearly shows that: 
+The estimated probabilities of film rating greater than 7 by the continuous variable **Budget** shows that: 
 
 - Within the range of 10, probability of film rating greater than 7 slightly increases as budget increases
 
@@ -301,7 +301,7 @@ The regression model of Budget vs. probability of film rating greater than 7 cle
 
 - Within the range greater 15, probability of film rating greater than 7 largely increases as budget increases
 
-The regression model of Genre vs. probability of film rating greater than 7 clearly shows that:
+The estimated probabilities of film rating greater than 7 by the categorical variable **Genre** shows that:
 
 - The films with genre: "Drama", "Action", "Animation" and "Romance" always have low probability of film rating greater than 7
 
